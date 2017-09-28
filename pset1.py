@@ -5,7 +5,7 @@
 import numpy as np
 import math
 from scipy import interpolate
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 ## parameters
 
@@ -80,14 +80,16 @@ for it in range(0,T):
   asim = agrid[np.int_(a_in_sim)]
   csim = R*asim[0:T] + w - asim[1:(T+1)]
 
-fig = plt.figure(1)
-plt.subplot(1,2,1)
-plt.plot(range(1,51), y, 'k-', lw=1)
-plt.plot(range(1,51), csim, 'r--', lw=1)
-plt.grid
-plt.title('Income and Consumption')
-plt.lengend('Income', 'Consumption')
 
-plt.subplot(1,2,2)
-plt.plot(range(0,51), asim, 'b-', lw=1)
-plt.plot(agrid,np.zeros(na), 'k', lw=0.5)
+#fig = plt.figure(1)
+#plt.subplot(1,2,1)
+#plt.plot(range(1,51), y, 'k-', lw=1)
+#plt.plot(range(1,51), csim, 'r--', lw=1)
+#plt.grid
+#plt.title('Income and Consumption')
+#plt.lengend('Income', 'Consumption')
+
+#plt.subplot(1,2,2)
+#plt.plot(range(0,51), asim, 'b-', lw=1)
+#plt.plot(agrid,np.zeros(na), 'k', lw=0.5)
+
