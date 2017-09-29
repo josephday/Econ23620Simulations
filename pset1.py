@@ -5,7 +5,7 @@
 import numpy as np
 import math
 from scipy import interpolate
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 ## parameters
 
@@ -18,9 +18,12 @@ T = 50 # finite time horizon
 b = 0.5 # unemployment benefit
 w = np.append(np.linspace(1,2.5,25),  np.linspace(2.5,0.1,25)) # incomes
 
+
+
+
 # set up asset grids
 na = 1000
-amax = 5
+amax = 10
 amin = 0 # borrowing constraint
 
 ## utility function
@@ -40,18 +43,21 @@ u = np.vectorize(u)
 # assets
 agrid = np.linspace(0,1,na).transpose()
 agrid = amin + float(amax-amin)*agrid
-agrid[min(range(len(agrid)), key=lambda i: abs(agrid[i]))]=0 #ensures zero in asset grid
+# ensures zero in asset grid
+agrid[min(range(len(agrid)), key=lambda i: abs(agrid[i]))]=0 
 
 # decisions
 V = np.zeros((na,T))
 con = np.zeros((na,T))
 sav = np.zeros((na,T))
 savind = np.zeros((na,T))
+works = np.zeros((na,T))
 
 # at t = T
 savind[:,T-1] = np.where(agrid==0)
 sav[:,T-1] = 0
-con[:,T-1] = float(R)*agrid + w[T-1] - sav[:,T-1]
+works[:,T-1] = 0
+con[:,T-1] = float(R)*agrid + w[T-1]*works[:,T-1] + b*(1-works[:,T-1]) - sav[:,T-1]
 V[:,T-1] = u(con[:,T-1])
 
 ## Solve for Value Fn Backwards
@@ -59,13 +65,17 @@ V[:,T-1] = u(con[:,T-1])
 for it in range(T-2,-1,-1):
   print('Solving value function at age {}'.format(it))
   for ia in range(0, na):
-    cash = float(R) * agrid[ia] + w[it]
+    cash = float(R) * agrid[ia] + w[it]*works[ia,it] + b*(1-works[ia,it])
     c = np.maximum((cash-agrid), 1*10**-10)
-    Vchoice = u(c) + beta * V[:,it+1]
+    Vchoice = u(c) + beta * V[:,it+1] - psi * works[:,it+1]
     V[ia,it] = np.max(Vchoice)
     savind[ia,it]  = np.argmax(Vchoice)
     sav[ia,it] = agrid[np.int_(savind[ia,it])]
     con[ia,it] = cash - sav[ia,it]
+    if w[it] > b:
+      works[ia,it-1] = 1
+    else:
+      works[ia,it-1] = 0
 
 
 ## Simulate
@@ -81,15 +91,15 @@ for it in range(0,T):
   csim = R*asim[0:T] + w - asim[1:(T+1)]
 
 
-#fig = plt.figure(1)
-#plt.subplot(1,2,1)
-#plt.plot(range(1,51), y, 'k-', lw=1)
-#plt.plot(range(1,51), csim, 'r--', lw=1)
-#plt.grid
-#plt.title('Income and Consumption')
-#plt.lengend('Income', 'Consumption')
+fig = plt.figure(1)
+plt.subplot(1,2,1)
+plt.plot(range(1,51), w, 'k-', lw=1)
+plt.plot(range(1,51), csim, 'r--', lw=1)
+plt.grid
+plt.title('Income and Consumption')
+plt.legend('Income', 'Consumption')
 
-#plt.subplot(1,2,2)
-#plt.plot(range(0,51), asim, 'b-', lw=1)
-#plt.plot(agrid,np.zeros(na), 'k', lw=0.5)
+plt.subplot(1,2,2)
+plt.plot(range(0,51), asim, 'b-', lw=1)
+plt.plot(agrid,np.zeros(na), 'k-', lw=0.5)
 
