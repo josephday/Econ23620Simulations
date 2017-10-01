@@ -16,14 +16,16 @@ R = 1 + r
 psi = 0.1 # disutility of labor
 T = 50 # finite time horizon
 b = 0.5 # unemployment benefit
-w = np.append(np.linspace(1,2.5,25),  np.linspace(2.5,0.1,25)) # incomes
+w = np.append(np.linspace(0.1,2.5,25),  np.linspace(2.5,0.1,25)) # incomes
 
+#b = b / sum(w)
+#w = w / sum(w)
 
 
 
 # set up asset grids
 na = 1000
-amax = 10
+amax = 5
 amin = 0 # borrowing constraint
 
 ## utility function
@@ -71,7 +73,7 @@ plot = True
 
 if solve:
   for it in range(T-2,-1,-1):
-    print('Solving value function at age {}'.format(it))
+    print('Solving value function at age {}'.format(it+1))
     for ia in range(0, na):
       cash_working = float(R) * agrid[ia] + w[it]
       c_working = np.maximum((cash_working-agrid), 1*10**-10)
@@ -90,16 +92,14 @@ if solve:
         sav[ia,it] = agrid[np.int_(savind[ia,it])]
         con[ia,it] = cash_working - sav[ia,it]
         works[ia,it] = 1
-        print('ya better work bitch')
+       
       else:   
         V[ia,it] = not_working_max
         savind[ia,it]  = np.argmax(Vchoice_not_working)
         sav[ia,it] = agrid[np.int_(savind[ia,it])]
         con[ia,it] = cash_not_working - sav[ia,it]
         works[ia,it] = 0
-        print('you dont gotta go to work work work work')
-
-print('sup')
+      
 
 ## Simulate
 if simulate:
@@ -110,27 +110,32 @@ if simulate:
 
 
   # create array of income after choice of labor
-  true_income = w
+  b_array = np.full(T, b)
+  csim=np.zeros(T)
+  sim_works=np.zeros(T+1)
+
 
   for it in range(0,T):
     print(' Simulating time period {}'.format((it+1)))
     a_in_sim[it+1] = savind[np.int_(a_in_sim[it]), it]
     asim = agrid[np.int_(a_in_sim)] 
-    if it==25:
-      print(asim)
-      
-    csim = R*asim[0:T] + true_income - asim[1:(T+1)]
+    sim_works[it] = works[int(a_in_sim[it]), it]  
+    csim[it] = R*asim[it] + w[it] * sim_works[it] + b * (1-sim_works[it]) - asim[it+1]
 
 if plot:
   fig = plt.figure(1)
-  plt.subplot(1,2,1)
+  plt.subplot(1,3,1)
   plt.plot(range(1,51), w, 'k-', lw=1)
   plt.plot(range(1,51), csim, 'r--', lw=1)
   plt.grid
   plt.title('Income and Consumption')
-  plt.legend('Income', 'Consumption')
 
-  plt.subplot(1,2,2)
+  plt.subplot(1,3,2)
+  plt.plot(range(0,51), sim_works, 'g-', lw=1)
+  plt.title('Work or No Work')
+  
+  plt.subplot(1,3,3)
   plt.plot(range(0,51), asim, 'b-', lw=1)
-  plt.plot(agrid,np.zeros(na), 'k-', lw=0.5)
+  plt.title('Wealth / Assets')
+
 
