@@ -15,17 +15,17 @@ r = 0.03 # interest rate
 R = 1 + r
 psi = 0.1 # disutility of labor
 T = 50 # finite time horizon
-b = 0.5 # unemployment benefit
+b = 0.1 # unemployment benefit
 w = np.append(np.linspace(0.1,2.5,25),  np.linspace(2.5,0.1,25)) # incomes
 
-#b = b / sum(w)
-#w = w / sum(w)
 
+# apply tax
+# w = w*0.6
 
 
 # set up asset grids
 na = 1000
-amax = 5
+amax = 10
 amin = 0 # borrowing constraint
 
 ## utility function
@@ -62,15 +62,12 @@ works[:,T-1] = 0
 con[:,T-1] = float(R)*agrid + w[T-1]*works[:,T-1] + b*(1-works[:,T-1]) - sav[:,T-1]
 V[:,T-1] = u(con[:,T-1])
 
-
-
-## Solve for Value Fn Backwards
-
-
+# what parts of code to run
 solve = True
 simulate = True
 plot = True
 
+## Solve for Value Fn Backwards
 if solve:
   for it in range(T-2,-1,-1):
     print('Solving value function at age {}'.format(it+1))
@@ -101,19 +98,17 @@ if solve:
         works[ia,it] = 0
       
 
-## Simulate
+## Simulate for a given initial wealth
 if simulate:
   a_in_sim = np.zeros(T+1)
   a_initial = 0
   inter = interpolate.interp1d(agrid,range(0,na),'nearest')
   a_in_sim[0] = inter(a_initial)
 
-
   # create array of income after choice of labor
   b_array = np.full(T, b)
   csim=np.zeros(T)
   sim_works=np.zeros(T+1)
-
 
   for it in range(0,T):
     print(' Simulating time period {}'.format((it+1)))
@@ -122,6 +117,8 @@ if simulate:
     sim_works[it] = works[int(a_in_sim[it]), it]  
     csim[it] = R*asim[it] + w[it] * sim_works[it] + b * (1-sim_works[it]) - asim[it+1]
 
+
+## Plot results of simulation
 if plot:
   fig = plt.figure(1)
   plt.subplot(1,3,1)
@@ -137,5 +134,7 @@ if plot:
   plt.subplot(1,3,3)
   plt.plot(range(0,51), asim, 'b-', lw=1)
   plt.title('Wealth / Assets')
+
+
 
 
