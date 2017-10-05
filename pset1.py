@@ -105,8 +105,7 @@ if simulate:
   inter = interpolate.interp1d(agrid,range(0,na),'nearest')
   a_in_sim[0] = inter(a_initial)
 
-  # create array of income after choice of labor
-  b_array = np.full(T, b)
+  # create empty array of simulated consumption, employment
   csim=np.zeros(T)
   sim_works=np.zeros(T+1)
 
